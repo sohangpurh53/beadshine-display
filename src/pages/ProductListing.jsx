@@ -12,6 +12,7 @@ import Layout from '../components/Layout';
 
 // Mock function to fetch products
 const fetchProducts = async (page = 1, sortBy = 'newest', searchQuery = '', filters = {}) => {
+const fetchProducts = async (page = 1, sortBy = 'newest', searchQuery = '', filters = {}) => {
   // In a real app, this would be an API call
   const allProducts = [
     { id: 1, title: "Ruby Beads", image: "https://example.com/ruby-beads.jpg", description: "Vibrant red ruby beads for stunning jewelry creations.", category: "Beads", price: 1200, brand: "BeadsBoutique", rating: 4.5 },
@@ -53,7 +54,9 @@ const fetchProducts = async (page = 1, sortBy = 'newest', searchQuery = '', filt
     totalPages: Math.ceil(sortedProducts.length / itemsPerPage)
   };
 };
+};
 
+const ProductCard = ({ product }) => (
 const ProductCard = ({ product }) => (
   <Card className="overflow-hidden">
     <img src={product.image} alt={product.title} className="w-full h-48 object-cover" />
@@ -68,12 +71,15 @@ const ProductCard = ({ product }) => (
     </CardFooter>
   </Card>
 );
+);
 
+const FilterSection = ({ title, children }) => (
 const FilterSection = ({ title, children }) => (
   <div className="mb-6">
     <h3 className="font-semibold mb-2">{title}</h3>
     {children}
   </div>
+);
 );
 
 const ProductListing = () => {
@@ -82,8 +88,6 @@ const ProductListing = () => {
   const [filters, setFilters] = useState({
     category: '',
     priceRange: [0, 5000],
-    brand: '',
-    rating: 0,
   });
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
@@ -100,7 +104,7 @@ const ProductListing = () => {
 
   const handleFilterChange = (key, value) => {
     setFilters(prev => ({ ...prev, [key]: value }));
-    setPage(1); // Reset to first page when filters change
+    setPage(1);
   };
 
   if (isLoading) return <div>Loading...</div>;
@@ -152,39 +156,6 @@ const ProductListing = () => {
               onValueChange={(value) => handleFilterChange('priceRange', value)}
               className="mt-2"
             />
-          </FilterSection>
-
-          <FilterSection title="Brand">
-            <Input
-              type="text"
-              placeholder="Search Brand"
-              value={filters.brand}
-              onChange={(e) => handleFilterChange('brand', e.target.value)}
-              className="mb-2"
-            />
-            {['BeadsBoutique', 'GemCraft', 'JewelryMaster', 'CharmWorld'].map(brand => (
-              <div key={brand} className="flex items-center mb-2">
-                <Checkbox
-                  id={`brand-${brand}`}
-                  checked={filters.brand === brand}
-                  onCheckedChange={() => handleFilterChange('brand', brand)}
-                />
-                <label htmlFor={`brand-${brand}`} className="ml-2">{brand}</label>
-              </div>
-            ))}
-          </FilterSection>
-
-          <FilterSection title="Customer Ratings">
-            {[4, 3, 2, 1].map(rating => (
-              <div key={rating} className="flex items-center mb-2">
-                <Checkbox
-                  id={`rating-${rating}`}
-                  checked={filters.rating === rating}
-                  onCheckedChange={() => handleFilterChange('rating', rating)}
-                />
-                <label htmlFor={`rating-${rating}`} className="ml-2">{rating}★ & above</label>
-              </div>
-            ))}
           </FilterSection>
         </div>
 
