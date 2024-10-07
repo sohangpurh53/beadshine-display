@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -8,15 +8,40 @@ import { Pagination, PaginationContent, PaginationItem, PaginationLink, Paginati
 import Layout from '../components/Layout';
 
 // Mock function to fetch products
-const fetchProducts = async (page = 1) => {
+const fetchProducts = async (page = 1, sortBy = 'newest', searchQuery = '') => {
   // In a real app, this would be an API call
+  const allProducts = [
+    { id: 1, title: "Ruby Beads", image: "https://example.com/ruby-beads.jpg", description: "Vibrant red ruby beads for stunning jewelry creations." },
+    { id: 2, title: "Silver Chain", image: "https://example.com/silver-chain.jpg", description: "Sterling silver chain for versatile jewelry designs." },
+    { id: 3, title: "Emerald Pendant", image: "https://example.com/emerald-pendant.jpg", description: "Elegant emerald pendant for a touch of luxury." },
+    { id: 4, title: "Gold Clasp", image: "https://example.com/gold-clasp.jpg", description: "14k gold clasp for secure and stylish closures." },
+    { id: 5, title: "Pearl Earrings", image: "https://example.com/pearl-earrings.jpg", description: "Classic freshwater pearl earrings for timeless elegance." },
+    // ... more products
+  ];
+
+  // Filter products based on search query
+  const filteredProducts = searchQuery
+    ? allProducts.filter(product => 
+        product.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        product.description.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : allProducts;
+
+  // Sort products
+  const sortedProducts = [...filteredProducts].sort((a, b) => {
+    if (sortBy === 'newest') return b.id - a.id;
+    // Add more sorting logic here if needed
+    return 0;
+  });
+
+  // Paginate products
+  const itemsPerPage = 6;
+  const startIndex = (page - 1) * itemsPerPage;
+  const paginatedProducts = sortedProducts.slice(startIndex, startIndex + itemsPerPage);
+
   return {
-    products: [
-      { id: 1, title: "Ruby Beads", image: "https://example.com/ruby-beads.jpg", description: "Vibrant red ruby beads for stunning jewelry creations." },
-      { id: 2, title: "Silver Chain", image: "https://example.com/silver-chain.jpg", description: "Sterling silver chain for versatile jewelry designs." },
-      // ... more products
-    ],
-    totalPages: 5
+    products: paginatedProducts,
+    totalPages: Math.ceil(sortedProducts.length / itemsPerPage)
   };
 };
 
@@ -38,19 +63,26 @@ const ProductCard = ({ product }) => (
 const ProductListing = () => {
   const [page, setPage] = useState(1);
   const [sortBy, setSortBy] = useState('newest');
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const searchQuery = searchParams.get('search') || '';
 
-  const { data, isLoading, error } = useQuery({
-    queryKey: ['products', page, sortBy],
-    queryFn: () => fetchProducts(page),
+  const { data, isLoading, error, refetch } = useQuery({
+    queryKey: ['products', page, sortBy, searchQuery],
+    queryFn: () => fetchProducts(page, sortBy, searchQuery),
   });
+
+  useEffect(() => {
+    refetch();
+  }, [searchQuery, refetch]);
 
   if (isLoading) return <div>Loading...</div>;
   if (error) return <div>An error occurred: {error.message}</div>;
 
   return (
     <Layout>
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Our Products</h1>
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+        <h1 className="text-3xl font-bold mb-4 md:mb-0">Our Products</h1>
         <Select value={sortBy} onValueChange={setSortBy}>
           <SelectTrigger className="w-[180px]">
             <SelectValue placeholder="Sort by" />
@@ -63,7 +95,10 @@ const ProductListing = () => {
           </SelectContent>
         </Select>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+      {searchQuery && (
+        <p className="mb-4">Showing results for: "{searchQuery}"</p>
+      )}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
         {data.products.map(product => (
           <ProductCard key={product.id} product={product} />
         ))}
