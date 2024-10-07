@@ -33,6 +33,7 @@ const Layout = ({ children }) => {
             <nav className={`md:flex ${isMenuOpen ? 'flex' : 'hidden'} flex-col md:flex-row absolute md:relative top-16 md:top-0 left-0 md:left-auto right-0 md:right-auto bg-white md:bg-transparent p-4 md:p-0 shadow-md md:shadow-none z-50`}>
               <Link to="/products" className="text-gray-600 hover:text-gray-800 my-2 md:my-0 md:mx-2">Products</Link>
               <Link to="/categories" className="text-gray-600 hover:text-gray-800 my-2 md:my-0 md:mx-2">Categories</Link>
+              <Link to="/contact" className="text-gray-600 hover:text-gray-800 my-2 md:my-0 md:mx-2">Contact Us</Link>
             </nav>
           </div>
           <form onSubmit={handleSearch} className="mt-4 flex">
