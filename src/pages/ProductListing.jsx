@@ -9,78 +9,9 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
 import Layout from '../components/Layout';
-
-// Mock function to fetch products
-const fetchProducts = async (page = 1, sortBy = 'newest', searchQuery = '', filters = {}) => {
-const fetchProducts = async (page = 1, sortBy = 'newest', searchQuery = '', filters = {}) => {
-  // In a real app, this would be an API call
-  const allProducts = [
-    { id: 1, title: "Ruby Beads", image: "https://example.com/ruby-beads.jpg", description: "Vibrant red ruby beads for stunning jewelry creations.", category: "Beads", price: 1200, brand: "BeadsBoutique", rating: 4.5 },
-    { id: 2, title: "Silver Chain", image: "https://example.com/silver-chain.jpg", description: "Sterling silver chain for versatile jewelry designs.", category: "Jewelry", price: 800, brand: "JewelryMaster", rating: 4.2 },
-    { id: 3, title: "Emerald Pendant", image: "https://example.com/emerald-pendant.jpg", description: "Elegant emerald pendant for a touch of luxury.", category: "Jewelry", price: 2500, brand: "GemCraft", rating: 4.8 },
-    { id: 4, title: "Gold Clasp", image: "https://example.com/gold-clasp.jpg", description: "14k gold clasp for secure and stylish closures.", category: "Supplies", price: 600, brand: "JewelryMaster", rating: 4.0 },
-    { id: 5, title: "Pearl Earrings", image: "https://example.com/pearl-earrings.jpg", description: "Classic freshwater pearl earrings for timeless elegance.", category: "Jewelry", price: 1500, brand: "BeadsBoutique", rating: 4.7 },
-    // ... more products
-  ];
-
-  // Filter products based on search query and filters
-  const filteredProducts = allProducts.filter(product => 
-    (searchQuery ? (
-      product.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      product.description.toLowerCase().includes(searchQuery.toLowerCase())
-    ) : true) &&
-    (filters.category ? product.category === filters.category : true) &&
-    (filters.priceRange ? (product.price >= filters.priceRange[0] && product.price <= filters.priceRange[1]) : true) &&
-    (filters.brand ? product.brand === filters.brand : true) &&
-    (filters.rating ? product.rating >= filters.rating : true)
-  );
-
-  // Sort products
-  const sortedProducts = [...filteredProducts].sort((a, b) => {
-    if (sortBy === 'newest') return b.id - a.id;
-    if (sortBy === 'popular') return b.rating - a.rating;
-    if (sortBy === 'price-low') return a.price - b.price;
-    if (sortBy === 'price-high') return b.price - a.price;
-    return 0;
-  });
-
-  // Paginate products
-  const itemsPerPage = 6;
-  const startIndex = (page - 1) * itemsPerPage;
-  const paginatedProducts = sortedProducts.slice(startIndex, startIndex + itemsPerPage);
-
-  return {
-    products: paginatedProducts,
-    totalPages: Math.ceil(sortedProducts.length / itemsPerPage)
-  };
-};
-};
-
-const ProductCard = ({ product }) => (
-const ProductCard = ({ product }) => (
-  <Card className="overflow-hidden">
-    <img src={product.image} alt={product.title} className="w-full h-48 object-cover" />
-    <CardContent className="p-4">
-      <h3 className="font-semibold text-lg mb-2">{product.title}</h3>
-      <p className="text-sm text-gray-600">{product.description}</p>
-    </CardContent>
-    <CardFooter>
-      <Link to={`/products/${product.id}`}>
-        <Button variant="outline">View Details</Button>
-      </Link>
-    </CardFooter>
-  </Card>
-);
-);
-
-const FilterSection = ({ title, children }) => (
-const FilterSection = ({ title, children }) => (
-  <div className="mb-6">
-    <h3 className="font-semibold mb-2">{title}</h3>
-    {children}
-  </div>
-);
-);
+import { fetchProducts } from '../utils/productUtils';
+import FilterSection from '../components/FilterSection';
+import ProductCard from '../components/ProductCard';
 
 const ProductListing = () => {
   const [page, setPage] = useState(1);
@@ -113,53 +44,23 @@ const ProductListing = () => {
   return (
     <Layout>
       <div className="flex flex-col md:flex-row">
-        {/* Filters Sidebar */}
         <div className="w-full md:w-1/4 pr-4">
           <h2 className="text-xl font-bold mb-4">Filters</h2>
           
-          <FilterSection title="Categories">
-            {['Beads', 'Jewelry', 'Charms', 'Supplies'].map(category => (
-              <div key={category} className="flex items-center mb-2">
-                <Checkbox
-                  id={`category-${category}`}
-                  checked={filters.category === category}
-                  onCheckedChange={() => handleFilterChange('category', category)}
-                />
-                <label htmlFor={`category-${category}`} className="ml-2">{category}</label>
-              </div>
-            ))}
-          </FilterSection>
+          <FilterSection 
+            title="Categories" 
+            categories={['Beads', 'Jewelry', 'Charms', 'Supplies']}
+            selectedCategory={filters.category}
+            onCategoryChange={(category) => handleFilterChange('category', category)}
+          />
 
-          <FilterSection title="Price Range">
-            <div className="flex items-center mb-2">
-              <Input
-                type="number"
-                placeholder="Min"
-                value={filters.priceRange[0]}
-                onChange={(e) => handleFilterChange('priceRange', [parseInt(e.target.value), filters.priceRange[1]])}
-                className="w-20 mr-2"
-              />
-              <span>to</span>
-              <Input
-                type="number"
-                placeholder="Max"
-                value={filters.priceRange[1]}
-                onChange={(e) => handleFilterChange('priceRange', [filters.priceRange[0], parseInt(e.target.value)])}
-                className="w-20 ml-2"
-              />
-            </div>
-            <Slider
-              min={0}
-              max={5000}
-              step={100}
-              value={filters.priceRange}
-              onValueChange={(value) => handleFilterChange('priceRange', value)}
-              className="mt-2"
-            />
-          </FilterSection>
+          <FilterSection 
+            title="Price Range"
+            priceRange={filters.priceRange}
+            onPriceRangeChange={(range) => handleFilterChange('priceRange', range)}
+          />
         </div>
 
-        {/* Product Listing */}
         <div className="w-full md:w-3/4">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
             <h1 className="text-3xl font-bold mb-4 md:mb-0">Our Products</h1>
