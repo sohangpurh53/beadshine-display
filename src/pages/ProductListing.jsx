@@ -8,24 +8,25 @@ import { Pagination, PaginationContent, PaginationItem, PaginationLink, Paginati
 import Layout from '../components/Layout';
 
 // Mock function to fetch products
-const fetchProducts = async (page = 1, sortBy = 'newest', searchQuery = '') => {
+const fetchProducts = async (page = 1, sortBy = 'newest', searchQuery = '', category = '') => {
   // In a real app, this would be an API call
   const allProducts = [
-    { id: 1, title: "Ruby Beads", image: "https://example.com/ruby-beads.jpg", description: "Vibrant red ruby beads for stunning jewelry creations." },
-    { id: 2, title: "Silver Chain", image: "https://example.com/silver-chain.jpg", description: "Sterling silver chain for versatile jewelry designs." },
-    { id: 3, title: "Emerald Pendant", image: "https://example.com/emerald-pendant.jpg", description: "Elegant emerald pendant for a touch of luxury." },
-    { id: 4, title: "Gold Clasp", image: "https://example.com/gold-clasp.jpg", description: "14k gold clasp for secure and stylish closures." },
-    { id: 5, title: "Pearl Earrings", image: "https://example.com/pearl-earrings.jpg", description: "Classic freshwater pearl earrings for timeless elegance." },
+    { id: 1, title: "Ruby Beads", image: "https://example.com/ruby-beads.jpg", description: "Vibrant red ruby beads for stunning jewelry creations.", category: "beads" },
+    { id: 2, title: "Silver Chain", image: "https://example.com/silver-chain.jpg", description: "Sterling silver chain for versatile jewelry designs.", category: "jewelry" },
+    { id: 3, title: "Emerald Pendant", image: "https://example.com/emerald-pendant.jpg", description: "Elegant emerald pendant for a touch of luxury.", category: "jewelry" },
+    { id: 4, title: "Gold Clasp", image: "https://example.com/gold-clasp.jpg", description: "14k gold clasp for secure and stylish closures.", category: "charms" },
+    { id: 5, title: "Pearl Earrings", image: "https://example.com/pearl-earrings.jpg", description: "Classic freshwater pearl earrings for timeless elegance.", category: "jewelry" },
     // ... more products
   ];
 
-  // Filter products based on search query
-  const filteredProducts = searchQuery
-    ? allProducts.filter(product => 
-        product.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        product.description.toLowerCase().includes(searchQuery.toLowerCase())
-      )
-    : allProducts;
+  // Filter products based on search query and category
+  const filteredProducts = allProducts.filter(product => 
+    (searchQuery ? (
+      product.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      product.description.toLowerCase().includes(searchQuery.toLowerCase())
+    ) : true) &&
+    (category ? product.category === category : true)
+  );
 
   // Sort products
   const sortedProducts = [...filteredProducts].sort((a, b) => {
@@ -66,15 +67,16 @@ const ProductListing = () => {
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
   const searchQuery = searchParams.get('search') || '';
+  const category = searchParams.get('category') || '';
 
   const { data, isLoading, error, refetch } = useQuery({
-    queryKey: ['products', page, sortBy, searchQuery],
-    queryFn: () => fetchProducts(page, sortBy, searchQuery),
+    queryKey: ['products', page, sortBy, searchQuery, category],
+    queryFn: () => fetchProducts(page, sortBy, searchQuery, category),
   });
 
   useEffect(() => {
     refetch();
-  }, [searchQuery, refetch]);
+  }, [searchQuery, category, refetch]);
 
   if (isLoading) return <div>Loading...</div>;
   if (error) return <div>An error occurred: {error.message}</div>;
@@ -97,6 +99,9 @@ const ProductListing = () => {
       </div>
       {searchQuery && (
         <p className="mb-4">Showing results for: "{searchQuery}"</p>
+      )}
+      {category && (
+        <p className="mb-4">Category: {category}</p>
       )}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
         {data.products.map(product => (
