@@ -1,114 +1,197 @@
-# Welcome to your GPT Engineer project
+# BeadsBoutique API
 
-## Project info
+This README provides detailed information about the BeadsBoutique API built with Django and Django REST framework.
 
-**URL**: https://run.gptengineer.app/projects/f3ff76eb-6ffb-4b18-973a-84c270571dac/improve
+## Table of Contents
+1. [Setup](#setup)
+2. [API Endpoints](#api-endpoints)
+3. [Models](#models)
+4. [Serializers](#serializers)
+5. [Views](#views)
+6. [Authentication](#authentication)
+7. [Pagination](#pagination)
+8. [Filtering and Searching](#filtering-and-searching)
+9. [Testing](#testing)
+10. [Deployment](#deployment)
 
-## Django Models
+## Setup
 
-Here are the Django models for the BeadsBoutique project:
+1. Clone the repository:
+   ```
+   git clone <repository-url>
+   ```
+
+2. Create a virtual environment and activate it:
+   ```
+   python -m venv env
+   source env/bin/activate  # On Windows use `env\Scripts\activate`
+   ```
+
+3. Install dependencies:
+   ```
+   pip install -r requirements.txt
+   ```
+
+4. Set up the database:
+   ```
+   python manage.py migrate
+   ```
+
+5. Create a superuser:
+   ```
+   python manage.py createsuperuser
+   ```
+
+6. Run the development server:
+   ```
+   python manage.py runserver
+   ```
+
+## API Endpoints
+
+- `/api/products/`: List and create products
+- `/api/products/<id>/`: Retrieve, update, and delete a specific product
+- `/api/categories/`: List and create categories
+- `/api/categories/<id>/`: Retrieve, update, and delete a specific category
+- `/api/contact/`: Create a contact message
+
+## Models
 
 ```python
-from django.db import models
-
-class Category(models.Model):
-    name = models.CharField(max_length=100)
-    description = models.TextField(blank=True)
-
-    def __str__(self):
-        return self.name
-
-class Product(models.Model):
-    title = models.CharField(max_length=200)
-    description = models.TextField()
-    price = models.DecimalField(max_digits=10, decimal_places=2)
-    image = models.ImageField(upload_to='products/')
-    category = models.ForeignKey(Category, on_delete=models.CASCADE)
-    brand = models.CharField(max_length=100)
-    rating = models.DecimalField(max_digits=3, decimal_places=2)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    def __str__(self):
-        return self.title
-
-class Contact(models.Model):
-    name = models.CharField(max_length=100)
-    email = models.EmailField()
-    message = models.TextField()
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return f"Message from {self.name}"
+# ... keep existing code for Category, Product, and Contact models
 ```
 
-These models represent the core data structure for the BeadsBoutique application:
+## Serializers
 
-1. `Category`: Represents product categories (e.g., Beads, Jewelry, Charms).
-2. `Product`: Represents individual products with details like title, description, price, etc.
-3. `Contact`: Stores contact form submissions from users.
+Create serializers for each model in `serializers.py`:
 
-## How can I edit this code?
+```python
+from rest_framework import serializers
+from .models import Category, Product, Contact
 
-There are several ways of editing your application.
+class CategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Category
+        fields = '__all__'
 
-**Use GPT Engineer**
+class ProductSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Product
+        fields = '__all__'
 
-Simply visit the GPT Engineer project at [GPT Engineer](https://gptengineer.app/projects/f3ff76eb-6ffb-4b18-973a-84c270571dac/improve) and start prompting.
-
-Changes made via gptengineer.app will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in the GPT Engineer UI.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+class ContactSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Contact
+        fields = '__all__'
 ```
 
-**Edit a file directly in GitHub**
+## Views
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+Create views for each model in `views.py`:
 
-**Use GitHub Codespaces**
+```python
+from rest_framework import viewsets
+from .models import Category, Product, Contact
+from .serializers import CategorySerializer, ProductSerializer, ContactSerializer
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+class CategoryViewSet(viewsets.ModelViewSet):
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
 
-## What technologies are used for this project?
+class ProductViewSet(viewsets.ModelViewSet):
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
 
-This project is built with .
+class ContactViewSet(viewsets.ModelViewSet):
+    queryset = Contact.objects.all()
+    serializer_class = ContactSerializer
+```
 
-- Vite
-- React
-- shadcn-ui
-- Tailwind CSS
+## Authentication
 
-## How can I deploy this project?
+Implement token authentication in `settings.py`:
 
-All GPT Engineer projects can be deployed directly via the GPT Engineer app.
+```python
+INSTALLED_APPS = [
+    # ...
+    'rest_framework.authtoken',
+]
 
-Simply visit your project at [GPT Engineer](https://gptengineer.app/projects/f3ff76eb-6ffb-4b18-973a-84c270571dac/improve) and click on Share -> Publish.
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+    ],
+}
+```
 
-## I want to use a custom domain - is that possible?
+## Pagination
 
-We don't support custom domains (yet). If you want to deploy your project under your own domain then we recommend using Netlify. Visit our docs for more details: [Custom domains](https://docs.gptengineer.app/tips-tricks/custom-domain/)
+Add pagination to your API views:
+
+```python
+REST_FRAMEWORK = {
+    # ...
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 10,
+}
+```
+
+## Filtering and Searching
+
+Implement filtering and searching for products:
+
+```python
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import filters
+
+class ProductViewSet(viewsets.ModelViewSet):
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_fields = ['category', 'brand']
+    search_fields = ['title', 'description']
+    ordering_fields = ['price', 'rating']
+```
+
+## Testing
+
+Create tests for your API endpoints in `tests.py`:
+
+```python
+from django.urls import reverse
+from rest_framework import status
+from rest_framework.test import APITestCase
+from .models import Category, Product
+
+class ProductTests(APITestCase):
+    def setUp(self):
+        self.category = Category.objects.create(name="Test Category")
+        self.product_data = {
+            "title": "Test Product",
+            "description": "Test Description",
+            "price": "9.99",
+            "category": self.category.id,
+        }
+
+    def test_create_product(self):
+        url = reverse('product-list')
+        response = self.client.post(url, self.product_data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Product.objects.count(), 1)
+        self.assertEqual(Product.objects.get().title, 'Test Product')
+```
+
+## Deployment
+
+1. Set `DEBUG = False` in `settings.py`
+2. Configure your production database
+3. Set up HTTPS
+4. Use a production-ready web server like Gunicorn
+5. Set up a reverse proxy with Nginx
+6. Use environment variables for sensitive information
+
+For more detailed deployment instructions, refer to the Django deployment documentation.
+
+---
+
+This README provides a comprehensive guide to setting up and using the BeadsBoutique API. For more information on Django REST framework, visit the [official documentation](https://www.django-rest-framework.org/).
