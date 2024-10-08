@@ -16,7 +16,7 @@ export const fetchProducts = async (page = 1, sortBy = 'newest', searchQuery = '
       product.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       product.description.toLowerCase().includes(searchQuery.toLowerCase())
     ) : true) &&
-    (filters.category ? product.category === filters.category : true) &&
+    (filters.categories.length > 0 ? filters.categories.includes(product.category) : true) &&
     (filters.priceRange ? (product.price >= filters.priceRange[0] && product.price <= filters.priceRange[1]) : true)
   );
 

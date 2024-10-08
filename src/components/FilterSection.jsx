@@ -3,7 +3,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
 
-const FilterSection = ({ title, categories, selectedCategory, onCategoryChange, priceRange, onPriceRangeChange }) => {
+const FilterSection = ({ title, categories, selectedCategories, onCategoryChange, priceRange, onPriceRangeChange }) => {
   if (categories) {
     return (
       <div className="mb-6">
@@ -12,8 +12,8 @@ const FilterSection = ({ title, categories, selectedCategory, onCategoryChange, 
           <div key={category} className="flex items-center mb-2">
             <Checkbox
               id={`category-${category}`}
-              checked={selectedCategory === category}
-              onCheckedChange={() => onCategoryChange(category)}
+              checked={selectedCategories.includes(category)}
+              onCheckedChange={(checked) => onCategoryChange(category, checked)}
             />
             <label htmlFor={`category-${category}`} className="ml-2">{category}</label>
           </div>

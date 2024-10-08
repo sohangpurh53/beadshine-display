@@ -1,13 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link, useLocation } from 'react-router-dom';
-import { Card, CardContent, CardFooter } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Input } from "@/components/ui/input";
-import { Slider } from "@/components/ui/slider";
 import Layout from '../components/Layout';
 import { fetchProducts } from '../utils/productUtils';
 import FilterSection from '../components/FilterSection';
@@ -17,7 +12,7 @@ const ProductListing = () => {
   const [page, setPage] = useState(1);
   const [sortBy, setSortBy] = useState('newest');
   const [filters, setFilters] = useState({
-    category: '',
+    categories: [],
     priceRange: [0, 5000],
   });
   const location = useLocation();
@@ -33,8 +28,18 @@ const ProductListing = () => {
     refetch();
   }, [searchQuery, filters, refetch]);
 
-  const handleFilterChange = (key, value) => {
-    setFilters(prev => ({ ...prev, [key]: value }));
+  const handleCategoryChange = (category, checked) => {
+    setFilters(prev => ({
+      ...prev,
+      categories: checked
+        ? [...prev.categories, category]
+        : prev.categories.filter(c => c !== category)
+    }));
+    setPage(1);
+  };
+
+  const handlePriceRangeChange = (range) => {
+    setFilters(prev => ({ ...prev, priceRange: range }));
     setPage(1);
   };
 
@@ -50,14 +55,14 @@ const ProductListing = () => {
           <FilterSection 
             title="Categories" 
             categories={['Beads', 'Jewelry', 'Charms', 'Supplies']}
-            selectedCategory={filters.category}
-            onCategoryChange={(category) => handleFilterChange('category', category)}
+            selectedCategories={filters.categories}
+            onCategoryChange={handleCategoryChange}
           />
 
           <FilterSection 
             title="Price Range"
             priceRange={filters.priceRange}
-            onPriceRangeChange={(range) => handleFilterChange('priceRange', range)}
+            onPriceRangeChange={handlePriceRangeChange}
           />
         </div>
 
