@@ -58,12 +58,38 @@ This README provides detailed information about the BeadsBoutique API built with
 ## Models
 
 ```python
-# ... keep existing code for Category, Product, and Contact models
+from django.db import models
+
+class Category(models.Model):
+    name = models.CharField(max_length=100)
+    description = models.TextField(blank=True)
+
+    def __str__(self):
+        return self.name
+
+class Product(models.Model):
+    title = models.CharField(max_length=200)
+    description = models.TextField()
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    image = models.ImageField(upload_to='products/', blank=True, null=True)
+    category = models.ForeignKey(Category, related_name='products', on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.title
+
+class Contact(models.Model):
+    name = models.CharField(max_length=100)
+    email = models.EmailField()
+    message = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.name} - {self.email}"
 ```
 
 ## Serializers
-
-Create serializers for each model in `serializers.py`:
 
 ```python
 from rest_framework import serializers
@@ -75,9 +101,12 @@ class CategorySerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class ProductSerializer(serializers.ModelSerializer):
+    category = CategorySerializer(read_only=True)
+    category_id = serializers.IntegerField(write_only=True)
+
     class Meta:
         model = Product
-        fields = '__all__'
+        fields = ['id', 'title', 'description', 'price', 'image', 'category', 'category_id', 'created_at', 'updated_at']
 
 class ContactSerializer(serializers.ModelSerializer):
     class Meta:
@@ -86,8 +115,6 @@ class ContactSerializer(serializers.ModelSerializer):
 ```
 
 ## Views
-
-Create views for each model in `views.py`:
 
 ```python
 from rest_framework import viewsets
@@ -105,11 +132,12 @@ class ProductViewSet(viewsets.ModelViewSet):
 class ContactViewSet(viewsets.ModelViewSet):
     queryset = Contact.objects.all()
     serializer_class = ContactSerializer
+    http_method_names = ['post']  # Only allow POST requests
 ```
 
 ## Authentication
 
-Implement token authentication in `settings.py`:
+To implement token authentication, add the following to your `settings.py`:
 
 ```python
 INSTALLED_APPS = [
@@ -126,7 +154,7 @@ REST_FRAMEWORK = {
 
 ## Pagination
 
-Add pagination to your API views:
+Add pagination to your API views by updating `settings.py`:
 
 ```python
 REST_FRAMEWORK = {
@@ -148,9 +176,9 @@ class ProductViewSet(viewsets.ModelViewSet):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    filterset_fields = ['category', 'brand']
+    filterset_fields = ['category']
     search_fields = ['title', 'description']
-    ordering_fields = ['price', 'rating']
+    ordering_fields = ['price', 'created_at']
 ```
 
 ## Testing
@@ -170,7 +198,7 @@ class ProductTests(APITestCase):
             "title": "Test Product",
             "description": "Test Description",
             "price": "9.99",
-            "category": self.category.id,
+            "category_id": self.category.id,
         }
 
     def test_create_product(self):
