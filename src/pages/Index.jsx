@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Layout from '../components/Layout';
+import VisitorStats from '../components/VisitorStats';
 
 const FeaturedProduct = ({ title, image, description }) => (
   <Card className="overflow-hidden">
@@ -29,6 +30,12 @@ const Index = () => {
   return (
     <Layout>
       <h1 className="text-4xl font-bold mb-8 text-center">Welcome to BeadsBoutique</h1>
+      
+      <section className="mb-12">
+        <h2 className="text-2xl font-semibold mb-4">Website Statistics</h2>
+        <VisitorStats />
+      </section>
+      
       <section className="mb-12">
         <h2 className="text-2xl font-semibold mb-4">Featured Products</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -37,6 +44,7 @@ const Index = () => {
           ))}
         </div>
       </section>
+      
       <section className="text-center">
         <h2 className="text-2xl font-semibold mb-4">Explore Our Collections</h2>
         <div className="flex justify-center space-x-4">
